@@ -12,7 +12,7 @@ def getFranceData(year):
     import pandas as pd
     url = f'https://fbref.com/en/comps/13/{str(year)}-{str(year+1)}/{str(year)}-{str(year+1)}-Ligue-1-Stats'
     dfs = pd.read_html(url)
-    return squadShooting(dfs)
+    return squadPassing(dfs)
 
 def getEnglandData(year):
     url = f'https://fbref.com/en/comps/9/{str(year)}-{str(year+1)}/{str(year)}-{str(year+1)}-Premier-League-Stats'
@@ -71,7 +71,22 @@ def squadShooting(dfs):
     return df_combined[columns_to_keep]
 
 def squadPassing(dfs):
-    return dfs[5]
+    import pandas as pd
+    df = dfs[10]
+    df.columns = pd.MultiIndex.from_tuples(
+        [
+            (
+                'About' if 'Unnamed' in level_0 else level_0,  # Add 'About' for unnamed columns
+                f"{level_0}_{level_1}" if level_0 in ['Short', 'Medium', 'Long'] else level_1  # Rename lower-level names for specific top-level names
+            )
+            for level_0, level_1 in df.columns
+        ],
+        names=df.columns.names
+    )
+
+    df_combined = pd.concat([df['About'], df['Total'], df['Short'], df['Medium'], df['Long']], axis=1)
+    columns_to_keep = ['Squad', 'Cmp', 'Att', 'Cmp%', 'TotDist', 'PrgDist', 'Short_Cmp', 'Short_Att', 'Short_Cmp%', 'Medium_Cmp', 'Medium_Att', 'Medium_Cmp%', 'Long_Cmp', 'Long_Att', 'Long_Cmp%']
+    return df_combined[columns_to_keep]
 
 def squadPassType(dfs):
     return dfs[6]
