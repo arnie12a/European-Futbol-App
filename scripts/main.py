@@ -12,7 +12,7 @@ def getFranceData(year):
     import pandas as pd
     url = f'https://fbref.com/en/comps/13/{str(year)}-{str(year+1)}/{str(year)}-{str(year+1)}-Ligue-1-Stats'
     dfs = pd.read_html(url)
-    return squadPassing(dfs)
+    return squadDefensiveActions(dfs)
 
 def getEnglandData(year):
     url = f'https://fbref.com/en/comps/9/{str(year)}-{str(year+1)}/{str(year)}-{str(year+1)}-Premier-League-Stats'
@@ -89,10 +89,19 @@ def squadPassing(dfs):
     return df_combined[columns_to_keep]
 
 def squadPassType(dfs):
-    return dfs[6]
+    import pandas as pd
+    df = dfs[12]
+    df.columns = pd.MultiIndex.from_tuples(
+    [('About' if 'Unnamed' in level_0 else level_0, level_1) 
+        for level_0, level_1 in df.columns],
+            names=df.columns.names
+    )
+    df_combined = pd.concat([df['About'], df['Pass Types'], df['Corner Kicks'], df['Outcomes']], axis=1)
+    columns_to_keep = ['Squad', 'Att', 'Live', 'Dead', 'FK', 'TB', 'Sw', 'Crs', 'TI', 'CK', 'In', 'Out', 'Str', 'Cmp', 'Off', 'Blocks']
+    return df_combined[columns_to_keep]
 
 def squadDefensiveActions(dfs):
-    return dfs[8]
+    return dfs[16]
 
 def squadPossession(dfs):
     return dfs[9]
