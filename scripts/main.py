@@ -12,7 +12,7 @@ def getFranceData(year):
     import pandas as pd
     url = f'https://fbref.com/en/comps/13/{str(year)}-{str(year+1)}/{str(year)}-{str(year+1)}-Ligue-1-Stats'
     dfs = pd.read_html(url)
-    return squadDefensiveActions(dfs)
+    return squadMiscellaneousStats(dfs)
 
 def getEnglandData(year):
     url = f'https://fbref.com/en/comps/9/{str(year)}-{str(year+1)}/{str(year)}-{str(year+1)}-Premier-League-Stats'
@@ -101,13 +101,45 @@ def squadPassType(dfs):
     return df_combined[columns_to_keep]
 
 def squadDefensiveActions(dfs):
-    return dfs[16]
+    import pandas as pd
+    df = dfs[16]
+    df.columns = pd.MultiIndex.from_tuples(
+        [('About' if 'Unnamed' in level_0 else level_0, level_1) 
+            for level_0, level_1 in df.columns],
+                names=df.columns.names
+        )
+    df_combined = pd.concat([df['About'], df['Tackles'], df['Challenges'], df['Blocks']], axis=1)
+    columns_to_exclude = ['# Pl', '90s']
+    final_df = df_combined.drop(columns_to_exclude, axis=1)
+    final_df
+    return final_df
 
 def squadPossession(dfs):
-    return dfs[9]
+    import pandas as pd
+    df = dfs[18]
+    df.columns = pd.MultiIndex.from_tuples(
+        [('About' if 'Unnamed' in level_0 else level_0, level_1) 
+            for level_0, level_1 in df.columns],
+                names=df.columns.names
+        )
+    df_combined = pd.concat([df['About'], df['Touches'], df['Take-Ons'], df['Carries'], df['Receiving']], axis=1)
+    columns_to_exclude = ['# Pl', '90s']
+    final_df = df_combined.drop(columns_to_exclude, axis=1)
+    return final_df
 
 def squadMiscellaneousStats(dfs):
-    return dfs[11]
+    import pandas as pd
+    df = dfs[22]
+    df.columns = pd.MultiIndex.from_tuples(
+        [('About' if 'Unnamed' in level_0 else level_0, level_1) 
+            for level_0, level_1 in df.columns],
+                names=df.columns.names
+        )
+
+    df_combined = pd.concat([df['About'], df['Performance'], df['Aerial Duels']], axis=1)
+    columns_to_exclude = ['# Pl', '90s']
+    final_df = df_combined.drop(columns_to_exclude, axis=1)
+    return final_df
 
 def getMetrics(dfs):
     getGeneralData(dfs)
@@ -119,3 +151,11 @@ def getMetrics(dfs):
     squadPossession(dfs)
     squadMiscellaneousStats(dfs)
     return
+
+def saveData(country, year, metric, data):
+    import os
+    BASE_DIR = '../FootballData'
+    league_dir = os.path.join(BASE_DIR, country, str(year))
+    os.makedirs(league_dir, exist_ok=True)
+
+    csv_path = os.path.join(league_dir, )
